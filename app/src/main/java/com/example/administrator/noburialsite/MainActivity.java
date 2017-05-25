@@ -19,42 +19,52 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<View> allView,allView2;
     View rootView;
     ArrayList<String> viewPath=new ArrayList<>();
-    ArrayList<Integer> viewId=new ArrayList<>();
+    ArrayList<String> viewId=new ArrayList<>();
+    public ArrayList<Integer> idInt=new ArrayList<>();
     String mClassName=getClass().getName();
     Context mContext;
     Rect rect=new Rect();
     DispatchTouchEventable dispatchTouchEventable;
     Button show;
+    MainFragment fragment1;
+    SecondFragment fragment2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mContext=this;
-        viewId.add(R.id.login);
-        viewId.add(0x7f0b0059);
+
+        viewId.add("login");
+        viewId.add("register");
+        viewId.add("activity_main_user");
+        viewId.add("fragment_a_tv_login");
+        viewId.add("fragment_b_tv_login");
+
         String packageName=getPackageName();
-        int imageResId = getResources().getIdentifier("activity_main_user", "id", packageName);
-        viewId.add(imageResId);
-        viewId.add(R.id.fragment_a_tv_login);
-        viewId.add(R.id.fragment_a_tv_register);
+        for (String id:viewId){
+            idInt.add(getResources().getIdentifier(id, "id", packageName));
+        }
+
         show= (Button) findViewById(R.id.bt);
         show.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                switchFragment();
             }
         });
-        showFragment();
+        fragment1 =new MainFragment();
+        fragment2=new SecondFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,fragment1,"Main").commit();
 
     }
 
-    private void showFragment() {
-        MainFragment fragment=new MainFragment();
+    private void switchFragment() {
         android.support.v4.app.Fragment temp=getSupportFragmentManager().findFragmentByTag("Main");
-        if(temp!=null){
-            getSupportFragmentManager().beginTransaction().remove(temp).commit();
+        if(temp==null){
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,fragment1,"Main").commit();
         }else{
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,fragment,"Main").commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,fragment2,"Second").commit();
         }
 
     }
@@ -102,14 +112,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Log.v("out" , "dispatchTouchEvent()");
         if(ev.getAction() == MotionEvent.ACTION_UP){
-            /*获取当前点击位置，遍历布局，获取当前点击位置对应的view，根据view映射路径，与json文件中的对比*/
             int  x = (int) ev.getRawX();
             int  y = (int) ev.getRawY();
             Log.v("out" , "touch point:"+x+","+y);
             if(allView2 != null)
                 allView2.clear();
             allView2 = getView((ViewGroup) rootView);
-            for (int  id:viewId) {
+            for (int  id : idInt) {
                 View view = findViewById(id);
                 if(view == null) continue;
                 view.getGlobalVisibleRect(rect);
